@@ -7,11 +7,11 @@
 import { append, map } from 'ramda';
 import { makeFailure, Result } from '../shared/result';
 import { isArray, isNumber, isString } from '../shared/type-predicates';
-import { CExp, isPrimOp, PrimOp, VarDecl, unparse } from './L4-ast';
+import { CExp, isPrimOp, PrimOp, VarDecl, unparse, VarRef } from './L4-ast';
 import { Env } from './L4-env-box';
 
 // Add void for value of side-effect expressions - set! and define
-export type Value = SExpValue | Closure | TracedClosure // HW3
+export type Value = SExpValue | Closure | TracedClosure; // HW3
 
 export type Functional = PrimOp | Closure;
 export const isFunctional = (x: any): x is Functional => isPrimOp(x) || isClosure(x);
@@ -45,16 +45,25 @@ export interface SymbolSExp {
 }
 
 // HW3
+
 export interface TracedClosure {
-    // add missing fields
+    tag: "TracedClosure";
+    name: string;
+    closure: Closure;
+
 }
 //makeFailure("TODO");//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Traced Closure constructor & type predicate
+export const makeTracedClosure = (closure: Closure, name: string): TracedClosure => 
+({
+    tag: "TracedClosure",
+    name: name,
+    closure: closure
+})
 
-export const makeTracedClosure = (closure: Closure, name: string): TracedClosure|Result<number> => makeFailure("TODO");
-//     // complete this
     
-export const isTraceClosure = (x: any): x is TracedClosure => true;
-//     // complete this
+export const isTraceClosure = (x: any): x is TracedClosure => x.tag === "TracedClosure";
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // @@L4-BOX-VALUE
@@ -85,6 +94,9 @@ export type LitSExp = number | boolean | string | SymbolSExp | EmptySExp | Compo
 export const closureToString = (c: Closure): string =>
     `<Closure ${c.params} ${map(unparse, c.body)}>`
 
+export const TracedClosureToString = (c: TracedClosure): string =>
+    `TracedClosure ${c.name}`
+    
 export const compoundSExpToArray = (cs: CompoundSExp, res: string[]): string[] | { s1: string[], s2: string } =>
     isEmptySExp(cs.val2) ? append(valueToString(cs.val1), res) :
     isCompoundSExp(cs.val2) ? compoundSExpToArray(cs.val2, append(valueToString(cs.val1), res)) :
@@ -100,6 +112,7 @@ export const valueToString = (val: Value): string =>
     val === false ? '#f' :
     isString(val) ? `"${val}"` :
     isClosure(val) ? closureToString(val) :
+    isTraceClosure(val) ? TracedClosureToString(val):
     isPrimOp(val) ? val.op :
     isSymbolSExp(val) ? val.val :
     isEmptySExp(val) ? "'()" :

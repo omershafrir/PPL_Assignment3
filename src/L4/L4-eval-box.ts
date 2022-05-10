@@ -7,11 +7,11 @@ import { isBoolExp, isCExp, isLitExp, isNumExp, isPrimOp, isStrExp, isVarRef, is
          isAppExp, isDefineExp, isIfExp, isLetrecExp, isLetExp, isProcExp, Binding, VarDecl, VarRef, CExp, Exp, IfExp, LetrecExp, LetExp, ProcExp, Program, SetExp,
          parseL4Exp, DefineExp, isTraceExp as isTraceExp, TraceExp, makeVarRef} from "./L4-ast";
 import { applyEnv, applyEnvBdg, globalEnvAddBinding, makeExtEnv, setFBinding,
-            theGlobalEnv, Env, FBinding } from "./L4-env-box";
+            theGlobalEnv , Env, FBinding , getFBindingVal } from "./L4-env-box";
 import { isClosure, makeClosure, Closure, Value, valueToString, TracedClosure, isTraceClosure, makeTracedClosure } from "./L4-value-box";
 import { applyPrimitive } from "./evalPrimitive-box";
 import { first, rest, isEmpty, cons } from "../shared/list";
-import { Result, bind, mapv, mapResult, makeFailure, makeOk } from "../shared/result";
+import { Result, bind, mapv, mapResult, makeFailure, makeOk , isOk } from "../shared/result";
 import { parse as p } from "../shared/parser";
 
 // ========================================================
@@ -42,17 +42,25 @@ export const isTrueValue = (x: Value): boolean =>
     ! (x === false);
 
     
-// HW3      
-const evalTraceExp = (exp: TraceExp): Result<void> => makeFailure("TODO")
-    // complete this
+// HW3     
+//      TODO                $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-// HW3 use these functions
-const printPreTrace = (name: string, vals: Value[], counter: number): void =>{
-    console.log(`>${" >".repeat(counter)} (${name} ${map(valueToString, vals)})`)}
+const evalTraceExp = (exp: TraceExp): Result<void> => {
+    const oldClosureResult = applyEnvBdg(theGlobalEnv , exp.var.var);
 
-const printPostTrace = (val: Value, counter: number): void =>{
-    console.log(`<${" <".repeat(counter)} ${val}`)}
-
+    if (isOk(oldClosureResult) ){
+        const oldClosure = getFBindingVal (oldClosureResult.value);
+        if (isClosure(oldClosure) ){
+            return makeOk(globalEnvAddBinding(exp.var.var , makeTracedClosure(oldClosure , exp.var.var)));
+        }
+        else{
+            return makeFailure(`${exp.var.var} is not a reference to a procedure`);
+        }
+    }
+    else{
+        return makeFailure(`failure`);
+    }
+}
 
 const evalIf = (exp: IfExp, env: Env): Result<Value> =>
     bind(applicativeEval(exp.test, env), (test: Value) => 
@@ -75,9 +83,22 @@ const applyClosure = (proc: Closure, args: Value[]): Result<Value> => {
     return evalSequence(proc.body, makeExtEnv(vars, args, proc.env));
 }
 
-const applyTracedClosure = (proc: TracedClosure, args: Value[]): Result<Value> => makeFailure("TODO");
-    // complete this
+// HW3 use these functions
+const printPreTrace = (name: string, vals: Value[], counter: number): void =>{
+    console.log(`>${" >".repeat(counter)} (${name} ${map(valueToString, vals)})`)}
 
+const printPostTrace = (val: Value, counter: number): void =>{
+    console.log(`<${" <".repeat(counter)} ${val}`)}
+
+//      TODO                $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+const applyTracedClosure = (proc: TracedClosure, args: Value[]): Result<Value> => {
+    const vars = map((v: VarDecl) => v.var, proc.closure.params);
+    printPreTrace(proc.name , vars , 1);
+    // printPostTrace()
+    return evalSequence(proc.closure.body, makeExtEnv(vars, args, proc.closure.env));
+    
+}
+//                          $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
 // Evaluate a sequence of expressions (in a program)
@@ -145,3 +166,4 @@ const evalSet = (exp: SetExp, env: Env): Result<void> =>
         mapv(applyEnvBdg(env, exp.var.var), (bdg: FBinding) =>
             setFBinding(bdg, val)));
 
+            
