@@ -5,6 +5,7 @@
 // 2. introduce void value type
 
 import { append, map } from 'ramda';
+import { makeFailure, Result } from '../shared/result';
 import { isArray, isNumber, isString } from '../shared/type-predicates';
 import { CExp, isPrimOp, PrimOp, VarDecl, unparse } from './L4-ast';
 import { Env } from './L4-env-box';
@@ -47,12 +48,15 @@ export interface SymbolSExp {
 export interface TracedClosure {
     // add missing fields
 }
-export const makeTracedClosure = (closure: Closure, name: string): TracedClosure =>
-    // complete this
-    
-export const isTraceClosure = (x: any): x is TracedClosure => 
-    // complete this
+//makeFailure("TODO");//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+export const makeTracedClosure = (closure: Closure, name: string): TracedClosure|Result<number> => makeFailure("TODO");
+//     // complete this
+    
+export const isTraceClosure = (x: any): x is TracedClosure => true;
+//     // complete this
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // @@L4-BOX-VALUE
 // Add void for value of side-effect expressions - set! and define
 export type SExpValue = void | number | boolean | string | PrimOp | Closure | SymbolSExp | EmptySExp | CompoundSExp | TracedClosure; //HW3
@@ -65,10 +69,12 @@ export const makeCompoundSExp = (val1: SExpValue, val2: SExpValue): CompoundSExp
 export const isCompoundSExp = (x: any): x is CompoundSExp => x.tag === "CompoundSexp";
 
 export const makeEmptySExp = (): EmptySExp => ({tag: "EmptySExp"});
+
 export const isEmptySExp = (x: any): x is EmptySExp => x.tag === "EmptySExp";
 
 export const makeSymbolSExp = (val: string): SymbolSExp =>
     ({tag: "SymbolSExp", val: val});
+
 export const isSymbolSExp = (x: any): x is SymbolSExp => x.tag === "SymbolSExp";
 
 // LitSExp are equivalent to JSON - they can be parsed and read as literal values

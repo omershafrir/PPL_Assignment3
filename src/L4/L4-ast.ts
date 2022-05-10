@@ -131,7 +131,7 @@ export const makeSetExp = (v: VarRef, val: CExp): SetExp =>
 
 // HW3
 export const makeTraceExp = (v: VarRef): TraceExp =>
-    // to be completed.
+    ({tag: "TraceExp" , var: v})
 
 // Type predicates for disjoint types
 export const isProgram = (x: any): x is Program => x.tag === "Program";
@@ -156,7 +156,7 @@ export const isLetrecExp = (x: any): x is LetrecExp => x.tag === "LetrecExp";
 export const isSetExp = (x: any): x is SetExp => x.tag === "SetExp";
 
 // HW3
-export const isTraceExp = (x: any): x is TraceExp => // complete this
+export const isTraceExp = (x: any): x is TraceExp => x.tag === "TraceExp";
 
 // Type predicates for type unions
 export const isExp = (x: any): x is Exp => isDefineExp(x) || isCExp(x);
@@ -249,11 +249,19 @@ const parseProcExp = (vars: Sexp, body: Sexp[]): Result<ProcExp> =>
     isArray(vars) && allT(isString, vars) ? mapv(mapResult(parseL4CExp, body), (cexps: CExp[]) => makeProcExp(map(makeVarDecl, vars), cexps)) :
     makeFailure(`Invalid vars for ProcExp`);
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // HW3
-export const parseTraceExp: (params: Sexp[]) => Result<TraceExp> = 
-    (params) => 
-        // completer this 
-        
+export const parseTraceExp= (params: Sexp[]) : Result<TraceExp> => 
+    params.length !== 1 ? makeFailure("Expression not of the form (trace <cexp>)"):
+    mapv(mapResult(parseL4VarRef, params), (vexp: VarRef[]) => makeTraceExp(vexp[0]));
+   
+    export const parseL4VarRef = (sexp: Sexp): Result<VarRef> =>
+    isEmpty(sexp) ? makeFailure("VarRef cannot be an empty list") :
+    isArray(sexp) ? makeFailure("VarRef cannot be a list") :
+    isToken(sexp) ? makeOk(makeVarRef(sexp.toString())) :
+    sexp;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const isGoodBindings = (bindings: Sexp): bindings is [string, Sexp][] =>
     isArray(bindings) &&
     allT(isArray, bindings) &&

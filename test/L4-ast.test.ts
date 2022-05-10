@@ -15,7 +15,7 @@ describe("HW3 trace expression", () => {
         }
     })
 })
-
+/*
 describe('L4 Parser', () => {
     it('parses atomic expressions', () => {
         expect(p("1")).toSatisfy(isOkT(isNumExp));
@@ -195,4 +195,6 @@ describe('L4 Unparse', () => {
         const set1 = "(set! x (+ 1 2))";
         expect(roundTrip(set1)).toEqual(makeOk(set1));
     });
+    
 });
+*/

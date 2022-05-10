@@ -42,16 +42,16 @@ export const isTrueValue = (x: Value): boolean =>
     ! (x === false);
 
     
-// HW3
-const evalTraceExp = (exp: TraceExp): Result<void> =>
+// HW3      
+const evalTraceExp = (exp: TraceExp): Result<void> => makeFailure("TODO")
     // complete this
 
 // HW3 use these functions
-const printPreTrace = (name: string, vals: Value[], counter: number): void =>
-    console.log(`>${" >".repeat(counter)} (${name} ${map(valueToString, vals)})`)
+const printPreTrace = (name: string, vals: Value[], counter: number): void =>{
+    console.log(`>${" >".repeat(counter)} (${name} ${map(valueToString, vals)})`)}
 
-const printPostTrace = (val: Value, counter: number): void =>
-    console.log(`<${" <".repeat(counter)} ${val}`)
+const printPostTrace = (val: Value, counter: number): void =>{
+    console.log(`<${" <".repeat(counter)} ${val}`)}
 
 
 const evalIf = (exp: IfExp, env: Env): Result<Value> =>
@@ -75,7 +75,7 @@ const applyClosure = (proc: Closure, args: Value[]): Result<Value> => {
     return evalSequence(proc.body, makeExtEnv(vars, args, proc.env));
 }
 
-const applyTracedClosure = (proc: TracedClosure, args: Value[]): Result<Value> => 
+const applyTracedClosure = (proc: TracedClosure, args: Value[]): Result<Value> => makeFailure("TODO");
     // complete this
 
 
