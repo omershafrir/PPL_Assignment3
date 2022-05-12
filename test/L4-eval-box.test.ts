@@ -1,15 +1,13 @@
 import { makeVarDecl, makeVarRef, parseL4 } from '../src/L4/L4-ast';
-import { isEnv, makeExtEnv, applyEnv, theGlobalEnv , globalEnvAddBinding } from '../src/L4/L4-env-box';
+import { isEnv, makeExtEnv, applyEnv, theGlobalEnv, globalEnvAddBinding } from '../src/L4/L4-env-box';
 import { makeClosure, makeCompoundSExp, makeEmptySExp, makeSymbolSExp } from '../src/L4/L4-value-box';
 import { evalParse, evalProgram } from '../src/L4/L4-eval-box';
 import { makeOk, bind, isFailure } from '../src/shared/result';
-
 
 describe('HW3 trace', () => {
     it('eval trace expression', () => {
         expect(bind(parseL4("(L4 (define f (lambda (x) x)) (trace f) (f 3))"), evalProgram)).toEqual(makeOk(3));
     })
-
 
     it('calls console.log with "hello"', () => {
         const consoleSpy = jest.spyOn(console, 'log');
@@ -261,6 +259,4 @@ describe('L4 Box Eval', () => {
                 (define even? (lambda (n) (if (= n 0) #t (odd? (- n 1)))))
                 (and (odd? 5) (even? 6)))`), evalProgram)).toEqual(makeOk(true));
     });
-    
 });
-    

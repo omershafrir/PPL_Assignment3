@@ -14,6 +14,8 @@ import { applyPrimitive } from "./evalPrimitive-box";
 import { first, rest, isEmpty, cons } from "../shared/list";
 import { Result, bind, mapv, mapResult, makeFailure, makeOk , isOk } from "../shared/result";
 import { isCompoundSexp, parse as p } from "../shared/parser";
+import { count } from "console";
+import { Box, makeBox, unbox , setBox  } from '../shared/box';
 
 // ========================================================
 // Eval functions
@@ -48,7 +50,6 @@ export const isTrueValue = (x: Value): boolean =>
 //      TODO  : CHANGE TO USING setFBinding()
 const evalTraceExp = (exp: TraceExp): Result<void> => {
     const oldClosureResult = applyEnvBdg(theGlobalEnv , exp.var.var);
-
     if (isOk(oldClosureResult) ){
         const oldClosure = getFBindingVal (oldClosureResult.value);
         if (isClosure(oldClosure) ){
@@ -101,13 +102,20 @@ const applyTracedClosure = (proc: TracedClosure, args: Value[]): Result<Value> =
     // console.log(util.inspect(proc, false, null, true /* enable colors */))
     // console.log("ARGS IS:");
     // console.log(util.inspect(args, false, null, true /* enable colors */))
-    const values = map (valueToString , args);
-    console.log("ARGS ARE:" +  values );
-    console.log("ARGS ARE (stringified):" + JSON.stringify( values ));
-
-    printPreTrace(proc.name , values , 1);
+    // const values = map (valueToString , args);
+    // console.log("ARGS ARE:" +  values );
+    // console.log("ARGS ARE (stringified):" + JSON.stringify( values ));
+    let counterBox = proc.counter;
+    // console.log(counterBox);
+    let counterNum = unbox( counterBox);
+    // console.log("COUNTER NUM IS::::"+ counterNum);
+    printPreTrace(proc.name , args , counterNum);
+    setBox(counterBox ,counterNum+1);
     const res = evalSequence(proc.closure.body, makeExtEnv(vars, args, proc.closure.env));
-    isOk(res) ? printPostTrace(res.value , 1) : console.log(res.message);
+    
+    isOk(res) ? printPostTrace(res.value , counterNum) : console.log(res.message);
+    setBox(counterBox ,counterNum-1);
+
     return res;
 
 }

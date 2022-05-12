@@ -5,6 +5,7 @@
 // 2. introduce void value type
 
 import { append, map } from 'ramda';
+import { Box, makeBox } from '../shared/box';
 import { makeFailure, Result } from '../shared/result';
 import { isArray, isNumber, isString } from '../shared/type-predicates';
 import { CExp, isPrimOp, PrimOp, VarDecl, unparse, VarRef } from './L4-ast';
@@ -50,6 +51,7 @@ export interface TracedClosure {
     tag: "TracedClosure";
     name: string;
     closure: Closure;
+    counter: Box<number>;
 
 }
 //makeFailure("TODO");//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +60,8 @@ export const makeTracedClosure = (closure: Closure, name: string): TracedClosure
 ({
     tag: "TracedClosure",
     name: name,
-    closure: closure
+    closure: closure,
+    counter: makeBox(0)
 })
 
     
