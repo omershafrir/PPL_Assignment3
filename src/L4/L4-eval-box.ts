@@ -2,17 +2,18 @@
 // L4 with mutation (set!) and env-box model
 // Direct evaluation of letrec with mutation, define supports mutual recursion.
 
-import { map, repeat, zipWith } from "ramda";
+import { concat , reduce , map, repeat, zipWith } from "ramda";
 import { isBoolExp, isCExp, isLitExp, isNumExp, isPrimOp, isStrExp, isVarRef, isSetExp,
          isAppExp, isDefineExp, isIfExp, isLetrecExp, isLetExp, isProcExp, Binding, VarDecl, VarRef, CExp, Exp, IfExp, LetrecExp, LetExp, ProcExp, Program, SetExp,
-         parseL4Exp, DefineExp, isTraceExp as isTraceExp, TraceExp, makeVarRef} from "./L4-ast";
+         parseL4Exp, DefineExp, isTraceExp as isTraceExp, TraceExp, makeVarRef, isCompoundExp} from "./L4-ast";
 import { applyEnv, applyEnvBdg, globalEnvAddBinding, makeExtEnv, setFBinding,
             theGlobalEnv , Env, FBinding , getFBindingVal } from "./L4-env-box";
-import { isClosure, makeClosure, Closure, Value, valueToString, TracedClosure, isTraceClosure, makeTracedClosure } from "./L4-value-box";
+import { CompoundSExp , isSExp , isClosure, makeClosure, Closure, Value, valueToString, TracedClosure, isTraceClosure, makeTracedClosure, SExpValue, SymbolSExp } from "./L4-value-box";
+import { isCompoundSExp as isCompound , CompoundSExp as compound} from "./L4-value-box";
 import { applyPrimitive } from "./evalPrimitive-box";
 import { first, rest, isEmpty, cons } from "../shared/list";
 import { Result, bind, mapv, mapResult, makeFailure, makeOk , isOk } from "../shared/result";
-import { parse as p } from "../shared/parser";
+import { isCompoundSexp, parse as p } from "../shared/parser";
 
 // ========================================================
 // Eval functions
@@ -44,14 +45,15 @@ export const isTrueValue = (x: Value): boolean =>
     
 // HW3     
 //      TODO                $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
+//      TODO  : CHANGE TO USING setFBinding()
 const evalTraceExp = (exp: TraceExp): Result<void> => {
     const oldClosureResult = applyEnvBdg(theGlobalEnv , exp.var.var);
 
     if (isOk(oldClosureResult) ){
         const oldClosure = getFBindingVal (oldClosureResult.value);
         if (isClosure(oldClosure) ){
-            return makeOk(globalEnvAddBinding(exp.var.var , makeTracedClosure(oldClosure , exp.var.var)));
+            return makeOk(setFBinding(oldClosureResult.value , makeTracedClosure(oldClosure , exp.var.var)));
+            // return makeOk(globalEnvAddBinding(exp.var.var , makeTracedClosure(oldClosure , exp.var.var)));
         }
         else{
             return makeFailure(`${exp.var.var} is not a reference to a procedure`);
@@ -92,13 +94,24 @@ const printPostTrace = (val: Value, counter: number): void =>{
 
 //      TODO                $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 const applyTracedClosure = (proc: TracedClosure, args: Value[]): Result<Value> => {
+
     const vars = map((v: VarDecl) => v.var, proc.closure.params);
-    printPreTrace(proc.name , vars , 1);
-    // printPostTrace()
-    return evalSequence(proc.closure.body, makeExtEnv(vars, args, proc.closure.env));
-    
+    // const util = require('util');
+    // console.log("PROC IS:");
+    // console.log(util.inspect(proc, false, null, true /* enable colors */))
+    // console.log("ARGS IS:");
+    // console.log(util.inspect(args, false, null, true /* enable colors */))
+    const values = map (valueToString , args);
+    console.log("ARGS ARE:" +  values );
+    console.log("ARGS ARE (stringified):" + JSON.stringify( values ));
+
+    printPreTrace(proc.name , values , 1);
+    const res = evalSequence(proc.closure.body, makeExtEnv(vars, args, proc.closure.env));
+    isOk(res) ? printPostTrace(res.value , 1) : console.log(res.message);
+    return res;
+
 }
-//                          $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+//   $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
 // Evaluate a sequence of expressions (in a program)

@@ -90,7 +90,7 @@ Purpose: lookup the value of var in env and return a mutable binding
 Signature: applyEnvBdg(env, var)
 Type: [Env * string -> Result<FBinding>]
 */
-export const applyEnvBdg = (env: Env, v: string): Result<FBinding> =>
+    export const applyEnvBdg = (env: Env, v: string): Result<FBinding> =>
     isGlobalEnv(env) ? applyGlobalEnvBdg(env, v) :
     isExtEnv(env) ? applyExtEnvBdg(env, v) :
     env;
